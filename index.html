@@ -64,7 +64,9 @@
   .chip.on { background:linear-gradient(90deg, var(--tide), var(--violet)); border-color:transparent; color:#fff; }
 
   #map { height:320px; background:#0d1333; }
-  .leaflet-container { font-family:'Inter',sans-serif; }
+  .leaflet-container { font-family:'Inter',sans-serif; background:#0d1333; }
+  /* Turns the normal light map into a dark, blue-tinted one */
+  .leaflet-tile-pane { filter:invert(1) hue-rotate(200deg) brightness(.85) contrast(.9) saturate(.7); }
 
   /* ---------- Pub cards ---------- */
   .cards { display:grid; grid-template-columns:repeat(auto-fill, minmax(170px, 1fr)); gap:10px; padding:14px; max-height:380px; overflow-y:auto; }
@@ -142,7 +144,7 @@
     </div>
   </div>
 
-  <footer id="footer">Pub details: your own sheet + Google · Fixtures: TheSportsDB · Map: © OpenStreetMap contributors, © CARTO</footer>
+  <footer id="footer">Pub details: your own sheet + Google · Fixtures: TheSportsDB · Map: © OpenStreetMap contributors</footer>
 </div>
 
 <script>
@@ -158,6 +160,7 @@ const SYSTEM =
   "Answer only from the data provided: the owner's pub sheet, Google's live pub details, and today's fixtures. " +
   "Never use outside knowledge about these pubs. If the answer is not in the data, say so plainly. " +
   "STYLE: friendly with a light Galway touch, but concise: two to four short sentences. Lead with the pub name(s). " +
+  "Write plain text only: no markdown, no asterisks, no bullet symbols. " +
   "SOURCES RULE: the owner's sheet is the most trusted. Google's details fill gaps. If they disagree, go with the sheet. " +
   "When a fact comes only from Google, say so briefly (e.g. 'Google lists it as dog-friendly'). " +
   "YES/NO RULE: in the sheet, TRUE means confirmed yes; FALSE or blank means not confirmed. In Google data, true means yes, " +
@@ -295,9 +298,9 @@ const HAS_MAP = typeof L !== "undefined";
 let map = null, pinLayer = null;
 if (HAS_MAP) {
   map = L.map("map", { scrollWheelZoom: false }).setView([53.2704, -9.0585], 17);
-  // Dark map style from CARTO (free with credit), to match the page
-  L.tileLayer("https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png", {
-    maxZoom: 20, attribution: "© OpenStreetMap contributors © CARTO"
+  // Standard OpenStreetMap tiles (free, no key). The CSS filter on .leaflet-tile-pane turns them dark blue to match the page.
+  L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    maxZoom: 19, attribution: "© OpenStreetMap contributors"
   }).addTo(map);
   pinLayer = L.layerGroup().addTo(map);
 } else {
@@ -362,7 +365,7 @@ function drawAll(live) {
 
   // Footer: sources, plus any warnings (e.g. Google unavailable)
   const warn = (live.errors || []).length ? " · ⚠️ " + esc(live.errors.join("; ")) : "";
-  footerEl.innerHTML = "Pub details: your own sheet + Google · Fixtures: TheSportsDB · Map: © OpenStreetMap contributors, © CARTO" + warn;
+  footerEl.innerHTML = "Pub details: your own sheet + Google · Fixtures: TheSportsDB · Map: © OpenStreetMap contributors" + warn;
 }
 
 // Chips switch filters on and off
@@ -434,7 +437,8 @@ async function ask(question) {
 
     // 3. Show the answer
     thinking.remove();
-    addBubble(data.reply, "bot", "Sheet fetched live at " + nowTime() + " · Google & fixtures refreshed every 5 min");
+    const replyText = String(data.reply || "").replace(/\*\*/g, "") + (data.cutOff ? " … (reply cut short)" : "");
+    addBubble(replyText, "bot", "Sheet fetched live at " + nowTime() + " · Google & fixtures refreshed every 5 min");
   } catch (err) {
     thinking.remove();
     addBubble("Oops: " + err.message, "error");
