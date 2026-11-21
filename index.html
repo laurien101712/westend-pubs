@@ -33,11 +33,18 @@
   h1, h2, .brand { font-family:'Space Grotesk',sans-serif; }
 
   /* ---------- Hero ---------- */
-  .hero { position:relative; padding:44px 24px 70px; text-align:center; overflow:hidden; }
+  .hero { position:relative; padding:100px 24px 120px; text-align:center; overflow:hidden;
+          /* Your photo of the Claddagh Basin hookers at Christmas (hero.jpg in your repo), under a navy-to-violet tint so the text stays readable */
+          background:linear-gradient(180deg, rgba(10,15,44,.30), rgba(10,15,44,.55) 60%, var(--night)),
+                     linear-gradient(90deg, rgba(47,107,255,.18), rgba(123,92,255,.22)),
+                     url("hero.jpg") center 45% / cover no-repeat; }
+  .hero p, .hero .eyebrow { position:relative; text-shadow:0 1px 3px rgba(0,0,0,.9), 0 2px 14px rgba(0,0,0,.7); }
+  .hero h1 { position:relative; filter:drop-shadow(0 2px 10px rgba(0,0,0,.45)); }
+  .hero .credit { position:absolute; right:12px; bottom:6px; font-size:.65rem; color:var(--muted); z-index:1; }
   .hero .eyebrow { text-transform:uppercase; letter-spacing:.25em; font-size:.75rem; color:var(--lilac); }
   .hero h1 { margin:10px 0 8px; font-size:clamp(2rem, 5vw, 3.4rem); line-height:1.05; letter-spacing:-.02em;
              background:linear-gradient(90deg, #fff, var(--lilac) 60%, var(--spark)); -webkit-background-clip:text; background-clip:text; color:transparent; }
-  .hero p { margin:0 auto; max-width:560px; color:var(--muted); }
+  .hero p { margin:0 auto; max-width:560px; color:var(--mist); font-weight:500; }
   /* Wave line along the bottom of the hero, a nod to the Atlantic */
   .hero svg { position:absolute; left:0; bottom:0; width:100%; height:50px; }
   /* Thin spectrum line: blue, violet, pink */
@@ -48,7 +55,10 @@
   /* ---------- Tonight strip ---------- */
   .tonight { margin:18px 0; padding:14px 18px; border-radius:16px; background:var(--glass);
              border:1px solid var(--line); backdrop-filter:blur(8px); line-height:1.6; font-size:.95rem; }
-  .tonight b { color:var(--lilac); font-family:'Space Grotesk',sans-serif; }
+  .tonight .row { display:flex; gap:10px; align-items:baseline; flex-wrap:wrap; }
+  .tonight .row + .row { margin-top:4px; }
+  .tonight .label { color:var(--lilac); font-family:'Space Grotesk',sans-serif; font-weight:700; min-width:190px; }
+  .tonight h2 { margin:0 0 6px; font-size:1rem; }
 
   /* ---------- Layout: explore + chat ---------- */
   .main { display:grid; grid-template-columns:1.25fr 1fr; gap:18px; }
@@ -62,6 +72,14 @@
           background:var(--glass); border:1px solid var(--line); border-radius:999px; padding:6px 14px; transition:.2s; }
   .chip:hover { border-color:var(--lilac); }
   .chip.on { background:linear-gradient(90deg, var(--tide), var(--violet)); border-color:transparent; color:#fff; }
+  .filterhead { padding:14px 14px 0; }
+  .filterhead h2 { margin:0; font-size:1rem; }
+  .filterhead p { margin:4px 0 0; font-size:.82rem; color:var(--muted); }
+  .chips { padding-top:10px; }
+  .chip.clear { background:none; border-style:dashed; color:var(--muted); }
+  .legend { display:flex; flex-wrap:wrap; gap:14px; align-items:center; padding:0 14px 12px; font-size:.8rem; color:var(--muted); }
+  .dot { display:inline-block; width:11px; height:11px; border-radius:50%; border:2px solid #fff; vertical-align:-1px; margin-right:5px; }
+  #count { margin-left:auto; color:var(--mist); font-weight:600; }
 
   #map { height:320px; background:#0d1333; }
   .leaflet-container { font-family:'Inter',sans-serif; background:#0d1333; }
@@ -109,6 +127,7 @@
   <div class="eyebrow">Galway · Back West</div>
   <h1>Ask the West End</h1>
   <p>Cross the bridge and find your pub: dog-friendly corners, good grub, the match on, or a session tonight.</p>
+  <div class="credit" id="photoCredit">Claddagh Basin, Galway · photo: Laurien</div>
   <svg viewBox="0 0 1440 50" preserveAspectRatio="none" aria-hidden="true">
     <path d="M0 30 Q180 0 360 30 T720 30 T1080 30 T1440 30" fill="none" stroke="url(#g)" stroke-width="2"/>
     <defs><linearGradient id="g"><stop offset="0" stop-color="#2f6bff"/><stop offset=".5" stop-color="#7b5cff"/><stop offset="1" stop-color="#ff6fae"/></linearGradient></defs>
@@ -121,12 +140,23 @@
 
   <div class="main">
     <div class="panel">
+      <div class="filterhead">
+        <h2>Find your kind of pub</h2>
+        <p>Tap one or more filters. Pubs that match stay bright on the map and in the list below; the rest fade out. Tap a filter again to turn it off.</p>
+      </div>
       <div class="chips" id="chips">
         <button class="chip" data-f="tonight">🎻 Music tonight</button>
         <button class="chip" data-f="dogs">🐶 Dogs</button>
         <button class="chip" data-f="food">🍽️ Food</button>
         <button class="chip" data-f="sport">📺 Sport</button>
         <button class="chip" data-f="open">🟢 Open now</button>
+        <button class="chip clear" id="clear" hidden>✕ Clear filters</button>
+      </div>
+      <div class="legend">
+        <span><span class="dot" style="background:#ff6fae"></span>Music tonight</span>
+        <span><span class="dot" style="background:#7b5cff"></span>Other pubs</span>
+        <span><span class="dot" style="background:#7b5cff;opacity:.25"></span>Doesn't match your filters</span>
+        <span id="count"></span>
       </div>
       <div id="map"></div>
       <div class="cards" id="cards"></div>
@@ -144,7 +174,7 @@
     </div>
   </div>
 
-  <footer id="footer">Pub details: your own sheet + Google · Fixtures: TheSportsDB · Map: © OpenStreetMap contributors</footer>
+  <footer id="footer">Pub info from Google Maps · Fixtures from TheSportsDB</footer>
 </div>
 
 <script>
@@ -158,13 +188,14 @@ const LIVE_MAX_AGE_MS = 5 * 60 * 1000;   // reuse Google/fixtures data for 5 min
 const SYSTEM =
   "You are Ask the West End, a friendly local guide to pubs in Galway's West End. " +
   "Answer only from the data provided. Never use outside knowledge about these pubs. If the answer is not in the data, say so plainly. " +
-  "STYLE: talk like a local friend giving a quick tip: warm, natural, concise. Two to four short sentences. Lead with the pub name(s). " +
-  "Write plain text only: no markdown, no asterisks, no bullet symbols. " +
+  "STYLE: very short, like a text from a local friend. Under 30 words in total. No intro, no sign-off, no explaining your reasoning. " +
+  "Give at most 2 pubs, one line each, in this shape: Pub name – key facts (e.g. 'The Salt House – dogs welcome, music tonight, open now'). " +
+  "Only include facts that answer the question. Plain text only: no markdown, no asterisks. " +
   "SOURCES (for your reasoning only): the data has two sources, the owner's sheet and Google. The sheet is the most trusted; " +
   "use Google to fill gaps, and if they disagree, go with the sheet. " +
   "Do NOT mention the sheet, Google, 'our records', 'on file' or where facts come from. Just state the facts naturally. " +
   "Only exception: if a key fact the person asked about is uncertain (only one source, or the sources disagree), " +
-  "add a light touch like 'worth ringing ahead to check' once, at most. " +
+  "add '(ring ahead)' after that fact, once at most. " +
   "YES/NO RULE: in the sheet, TRUE means yes; FALSE or blank means unknown. In Google data, true means yes, false means no, missing means unknown. " +
   "Never say a pub does NOT have something unless a source clearly says no. " +
   "MUSIC RULE: the sheet's music_nights list the evenings with music. Use today's day name (given below) for 'tonight'. " +
@@ -328,8 +359,11 @@ function drawAll(live) {
     return esc(f.match) + " (" + t + ")";
   });
   tonightEl.innerHTML =
-    "<b>Tonight, " + esc(day) + ":</b> 🎻 " + (music.length ? esc(music.join(", ")) : "no music confirmed yet") +
-    " &nbsp;·&nbsp; 📺 " + (games.length ? games.join(", ") : "no listed matches today");
+    "<h2>What's on tonight · " + esc(day) + "</h2>" +
+    '<div class="row"><span class="label">🎻 Live music tonight</span><span>' +
+      (music.length ? esc(music.join(", ")) : "No music confirmed yet") + "</span></div>" +
+    '<div class="row"><span class="label">📺 Matches on today</span><span>' +
+      (games.length ? games.join(", ") : "No matches listed today") + "</span></div>";
 
   // Cards and pins
   if (HAS_MAP) pinLayer.clearLayers();
@@ -365,15 +399,27 @@ function drawAll(live) {
     }
   }
 
+  // How many pubs match, and show "Clear filters" only when a filter is on
+  const matching = PUBS.filter(matchesFilters).length;
+  document.getElementById("count").textContent =
+    filters.size ? "Showing " + matching + " of " + PUBS.length + " pubs" : PUBS.length + " pubs";
+  document.getElementById("clear").hidden = filters.size === 0;
+
   // Footer: sources, plus any warnings (e.g. Google unavailable)
   const warn = (live.errors || []).length ? " · ⚠️ " + esc(live.errors.join("; ")) : "";
-  footerEl.innerHTML = "Pub details: your own sheet + Google · Fixtures: TheSportsDB · Map: © OpenStreetMap contributors" + warn;
+  footerEl.innerHTML = "Pub info from Google Maps · Fixtures from TheSportsDB" + warn;
 }
 
 // Chips switch filters on and off
 document.getElementById("chips").addEventListener("click", e => {
   const chip = e.target.closest(".chip");
   if (!chip) return;
+  if (chip.id === "clear") {            // switch every filter off
+    filters.clear();
+    document.querySelectorAll(".chip.on").forEach(c => c.classList.remove("on"));
+    drawAll(liveCache ? liveCache.data : {});
+    return;
+  }
   const f = chip.dataset.f;
   filters.has(f) ? filters.delete(f) : filters.add(f);
   chip.classList.toggle("on");
