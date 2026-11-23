@@ -199,6 +199,10 @@ const SYSTEM =
   "YES/NO RULE: in the sheet, TRUE means yes; FALSE or blank means unknown. In Google data, true means yes, false means no, missing means unknown. " +
   "Never say a pub does NOT have something unless a source clearly says no. " +
   "MUSIC RULE: the sheet's music_nights list the evenings with music. Use today's day name (given below) for 'tonight'. " +
+  "FOOD RULE: for food questions use the food flags (food, veggie, brunch, kidsMenu), the summary and what recentReviews say about the food. " +
+  "For vegetarian questions, count a pub if veggie is true or reviews mention vegetarian or vegan options. " +
+  "Paraphrase reviews in a few words (e.g. 'reviewers rave about the chowder'); never quote them word for word or name reviewers. " +
+  "If the evidence is thin (one review, or no flag), say so briefly. " +
   "OPEN RULE: openNow is about right now. Mention it briefly when relevant (e.g. 'open now'). " +
   "MATCH RULE: fixtures list today's games with start times in Irish time. You do not know which pub shows which match; " +
   "suggest pubs with sport on and say it's worth ringing ahead for a specific game. " +
@@ -463,8 +467,10 @@ function dataForClaude() {
         music_type: p.music_type, music_nights: ["mon","tue","wed","thu","fri","sat","sun"].filter(d => p[d] === "TRUE"),
         music_notes: p.music_notes, opening_hours: p.opening_hours
       },
-      google: p.google ? { openNow: g.openNow, rating: g.rating, reviews: g.reviews, dogs: g.dogs,
-                           liveMusic: g.liveMusic, sport: g.sport, food: g.food } : "no Google match"
+      google: p.google ? { openNow: g.openNow, rating: g.rating, reviewCount: g.reviews, dogs: g.dogs,
+                           liveMusic: g.liveMusic, sport: g.sport, food: g.food,
+                           veggie: g.veggie, brunch: g.brunch, kidsMenu: g.kidsMenu,
+                           summary: g.summary, recentReviews: g.reviewList } : "no Google match"
     };
   });
   return JSON.stringify({ pubs, fixtures_today: FIXTURES });
